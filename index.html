@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chúc Mừng Năm Mới</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #0d0d0d, #0f0e0e);
+    color: rgb(241, 235, 235);
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+}
+
+/* ===== CENTER CONTAINER ===== */
+#center {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+/* ===== COUNTDOWN ===== */
+#countdown {
+    font-size: clamp(60px, 18vw, 120px);
+    font-weight: bold;
+    letter-spacing: 10px;
+    animation: pulse 1s infinite alternate;
+}
+
+/* ===== TITLE ===== */
+#title {
+    font-size: clamp(32px, 10vw, 70px);
+    margin-top: 10px;
+    display: none;
+    animation: neonZoom 1.8s ease forwards;
+}
+
+/* ===== HIỆU ỨNG CHỮ CHÚC MỪNG NĂM MỚI ===== */
+.newyear-text {
+    display: inline-block;
+    font-weight: bold;
+    background: linear-gradient(
+        90deg,
+        #ffffff,
+        #ffd700,
+        #ff4d6d,
+        #ffd700,
+        #ffffff
+    );
+    background-size: 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation:
+        shine 3s linear infinite,
+        glow 2s ease-in-out infinite,
+        floatText 4s ease-in-out infinite;
+}
+
+/* ===== CRUSH NAME ===== */
+.crush-name {
+    display: inline-block;
+    margin-top: 10px;
+    color: #ffb6c1;
+    text-shadow:
+        0 0 10px #ff4d6d,
+        0 0 25px #ff4d6d,
+        0 0 50px #ff1e56;
+    animation: heartbeat 1.5s infinite;
+    font-weight: bold;
+}
+
+/* ===== WISH ===== */
+#wish {
+    font-size: clamp(18px, 5vw, 30px);
+    margin-top: 20px;
+    padding: 0 20px;
+    min-height: 2.2em;
+    color: #ffb6c1;
+    display: none;
+    white-space: pre-line;
+}
+
+/* ===== CANVAS ===== */
+canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse {
+    from { text-shadow: 0 0 10px #fff; transform: scale(1); }
+    to { text-shadow: 0 0 40px #ff004c; transform: scale(1.1); }
+}
+
+@keyframes neonZoom {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.08); }
+    50% { transform: scale(1); }
+    75% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+/* ánh sáng chạy */
+@keyframes shine {
+    0% { background-position: 0%; }
+    100% { background-position: 300%; }
+}
+
+/* phát sáng neon */
+@keyframes glow {
+    0% {
+        text-shadow:
+            0 0 10px rgba(255,215,0,0.5),
+            0 0 20px rgba(255,77,109,0.5);
+    }
+    50% {
+        text-shadow:
+            0 0 30px rgba(255,77,109,1),
+            0 0 60px rgba(255,30,86,1);
+    }
+    100% {
+        text-shadow:
+            0 0 10px rgba(255,215,0,0.5),
+            0 0 20px rgba(255,77,109,0.5);
+    }
+}
+
+/* bay nhẹ */
+@keyframes floatText {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+</style>
+</head>
+
+<body>
+
+<div id="center">
+    <div id="countdown">5</div>
+
+    <div id="title">
+        <span class="newyear-text">🎉 CHÚC MỪNG NĂM MỚI 🎉</span><br>
+        <span class="crush-name">BÉ THẢO</span>
+    </div>
+
+    <div id="wish"></div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+/* ===== COUNTDOWN ===== */
+let time = 5;
+const countdownEl = document.getElementById("countdown");
+
+const countdown = setInterval(() => {
+    time--;
+    countdownEl.textContent = time;
+    if (time === 0) {
+        clearInterval(countdown);
+        countdownEl.style.display = "none";
+        startFireworks();
+        showText();
+    }
+}, 1000);
+
+/* ===== FIREWORKS ===== */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
+
+let fireworks = [], particles = [];
+
+class Firework {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height;
+        this.ty = Math.random() * canvas.height * 0.5;
+    }
+    update() {
+        this.y -= 7;
+        if (this.y <= this.ty) {
+            explode(this.x, this.y);
+            return false;
+        }
+        return true;
+    }
+    draw() {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(this.x, this.y, 3, 10);
+    }
+}
+
+function explode(x, y) {
+    for (let i = 0; i < 150; i++) {
+        const a = Math.random() * Math.PI * 2;
+        particles.push({
+            x, y,
+            vx: Math.cos(a) * Math.random() * 5,
+            vy: Math.sin(a) * Math.random() * 5,
+            life: 1,
+            color: `hsl(${Math.random()*360},100%,60%)`
+        });
+    }
+}
+
+function animate() {
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    fireworks = fireworks.filter(f => (f.draw(), f.update()));
+
+    particles.forEach((p,i)=>{
+        p.x+=p.vx;
+        p.y+=p.vy+1;
+        p.life-=0.01;
+        ctx.globalAlpha=p.life;
+        ctx.fillStyle=p.color;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,2,0,Math.PI*2);
+        ctx.fill();
+        if(p.life<=0) particles.splice(i,1);
+    });
+    ctx.globalAlpha=1;
+    requestAnimationFrame(animate);
+}
+
+function startFireworks(){
+    animate();
+    setInterval(()=>fireworks.push(new Firework()),800);
+}
+
+/* ===== TEXT ===== */
+const title = document.getElementById("title");
+const wishEl = document.getElementById("wish");
+
+const finalWish =
+"💖 Chúc em năm mới thật nhiều sức khỏe, công việc, học tập thuận lợi và luôn vui vẻ mỗi ngày.\n\n" +
+"✨ Năm mới mong rằng mọi điều tốt đẹp sẽ đến với em, để 2026 trở thành một năm thật rực rỡ.\n\n" +
+"🌸 Chúc em luôn bình an, gặp nhiều may mắn, ngày càng xinh đẹp " +
+"và có thêm thật nhiều cơ hội cùng những niềm vui mới nhó. 🎊";
+
+function typeText(text, i = 0) {
+    wishEl.textContent = text.slice(0, i);
+    if (i < text.length) {
+        setTimeout(() => typeText(text, i + 1), 35);
+    }
+}
+
+function showText() {
+    title.style.display = "block";
+    wishEl.style.display = "block";
+    typeText(finalWish);
+}
+
+/* ===== FLOATING HEARTS ===== */
+setInterval(() => {
+    const heart = document.createElement("div");
+    heart.innerHTML = "💗";
+    heart.style.position = "fixed";
+    heart.style.left = Math.random() * 100 + "vw";
+    heart.style.bottom = "-20px";
+    heart.style.fontSize = Math.random() * 20 + 16 + "px";
+    heart.style.opacity = 0.8;
+    heart.style.transition = "transform 4s linear, opacity 4s";
+    heart.style.zIndex = 5;
+
+    document.body.appendChild(heart);
+
+    requestAnimationFrame(() => {
+        heart.style.transform = "translateY(-110vh)";
+        heart.style.opacity = 0;
+    });
+
+    setTimeout(() => heart.remove(), 4000);
+}, 700);
+</script>
+
+</body>
+</html>
